@@ -52,7 +52,7 @@ public class API_DeviceList_JSON extends HttpServlet {
             } catch (Exception e) {
             }
             DeviceController c = new DeviceController(m);
-            List<DeviceInfo> devs = c.getOwnerDevicesOfType(Authorizer.getUser(request), type);
+            List<DeviceInfo> devs = c.getOwnerDevicesOfType(Authorizer.getUsername(request), type);
             if (devs != null) {
                 JsonArrayBuilder arr = Json.createArrayBuilder();
                 for (DeviceInfo i : devs) {
