@@ -5,17 +5,18 @@
  */
 package com.wpi.swarm.api.device;
 
+import com.google.gson.Gson;
+import com.wpi.swarm.api.device.API_DeviceType_JSON.JDTR.VDef;
 import com.wpi.swarm.auth.Authorizer;
-import com.wpi.swarm.device.DeviceController;
-import com.wpi.swarm.device.DeviceInfo;
 import com.wpi.swarm.device.DeviceType;
 import com.wpi.swarm.device.DeviceType.ValueDef;
 import com.wpi.swarm.device.DeviceType.ValueDef.ValueType;
 import com.wpi.swarm.mongo.MCon;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
+import javax.json.Json;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -26,8 +27,8 @@ import javax.servlet.http.HttpServletResponse;
  *
  * @author jtste
  */
-@WebServlet(name = "API_DeviceType", urlPatterns = {"/api/type"})
-public class API_DeviceType extends HttpServlet {
+@WebServlet(name = "API_DeviceType_JSON", urlPatterns = {"/api/json/type"})
+public class API_DeviceType_JSON extends HttpServlet {
 
     // <editor-fold >
     /**
@@ -41,30 +42,26 @@ public class API_DeviceType extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        response.setContentType("application/json");
         MCon m = new MCon();
         if (Authorizer.authorize(m, request)) {
-            long type = 0;
+            JDTR in = null;
             try {
-                type = Long.parseUnsignedLong(request.getParameter("type"), 16);
+                in = new Gson().fromJson(request.getReader(), JDTR.class);
             } catch (Exception e) {
             }
-            if (type == 0) {
+            if (in == null || in.getType() == 0) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 return;
             }
-            DeviceType tp = DeviceType.load(m, type);
+            DeviceType tp = DeviceType.load(m, in.getType());
             if (tp == null) {
                 response.setStatus(HttpServletResponse.SC_NOT_FOUND);
                 return;
             }
             try (PrintWriter w = response.getWriter()) {
                 response.setStatus(HttpServletResponse.SC_OK);
-                w.println("status=$SUCCESS");
-                w.println("creator=$"+tp.getCreator());
-                for (ValueDef d : tp.getValueDefs()) {
-                    w.println(d.getName() + "-fieldId=#" + d.getFieldId());
-                    w.println(d.getName() + "-type=$" + d.getType().name());
-                }
+                w.println(Json.createObjectBuilder().add("status", "SUCCESS").add("data", DeviceType.toJson(tp)).build().toString());
             }
         } else {
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
@@ -82,9 +79,34 @@ public class API_DeviceType extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        response.setContentType("application/json");
         MCon m = new MCon();
         if (Authorizer.authorizeUser(m, request)) {
-            response.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
+            JDTR in = null;
+            try {
+                in = new Gson().fromJson(request.getReader(), JDTR.class);
+            } catch (Exception e) {
+            }
+            if (in == null || in.getType() == 0 || in.creator == null || in.defs == null) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                return;
+            }
+            DeviceType tp = new DeviceType(in.getType(), in.creator);
+            for (Entry<String, VDef> e : in.defs.entrySet()) {
+                if (e.getValue().getType() != null && e.getValue().fieldId > -1) {
+                    tp.addDef(new ValueDef(e.getKey(), e.getValue().getType(), e.getValue().fieldId));
+                }
+            }
+            if (DeviceType.update(m, tp)) {
+                try (PrintWriter w = response.getWriter()) {
+                    response.setStatus(HttpServletResponse.SC_OK);
+                    w.println(Json.createObjectBuilder().add("status", "SUCCESS").add("data", DeviceType.toJson(tp)).build().toString());
+                }
+            } else {
+                response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                return;
+            }
+
         } else {
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
         }
@@ -100,4 +122,37 @@ public class API_DeviceType extends HttpServlet {
         return "Short description";
     }// </editor-fold>
 
+    static class JDTR {
+
+        String type = null;
+        String creator = null;
+        Map<String, VDef> defs = null;
+
+        long getType() {
+            if (type == null) {
+                return 0;
+            }
+            try {
+                return Long.parseUnsignedLong(type, 16);
+            } catch (Exception e) {
+            }
+            return 0;
+        }
+
+        static class VDef {
+
+            int fieldId;
+            String type;
+
+            ValueType getType() {
+                if (type != null) {
+                    try {
+                        return ValueType.valueOf(type.toUpperCase());
+                    } catch (Exception e) {
+                    }
+                }
+                return null;
+            }
+        }
+    }
 }

@@ -5,13 +5,13 @@
  */
 package com.wpi.swarm.api.device;
 
+import com.google.gson.Gson;
 import com.wpi.swarm.auth.Authorizer;
 import com.wpi.swarm.device.DeviceController;
 import com.wpi.swarm.device.DeviceInfo;
 import com.wpi.swarm.mongo.MCon;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Map.Entry;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -22,49 +22,41 @@ import javax.servlet.http.HttpServletResponse;
  *
  * @author jtste
  */
-@WebServlet(name = "API_DeviceManage", urlPatterns = {"/api/device/manage"})
-public class API_DeviceManage extends HttpServlet {
+@WebServlet(name = "API_DeviceManage_JSON", urlPatterns = {"/api/json/device/manage"})
+public class API_DeviceManage_JSON extends HttpServlet {
 
     protected void act(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        response.setContentType("application/json");
         MCon m = new MCon();
         if (Authorizer.authorizeUser(m, request)) {
-            long id = 0;
-            String key = null;
+            JDMR in = null;
             try {
-                id = Long.parseUnsignedLong(request.getParameter("id"), 16);
+                in = new Gson().fromJson(request.getReader(), JDMR.class);
             } catch (Exception e) {
             }
-            try {
-                key = request.getParameter("key");
-            } catch (Exception e) {
+            if (in==null){
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                return;
             }
             DeviceController dc = new DeviceController(m);
-            String action = request.getParameter("new_action");
-            String owner = request.getParameter("new_owner");
-            String name = request.getParameter("new_name");
             DeviceInfo dev = null;
-            long type = 0;
-            try {
-                type = Long.parseUnsignedLong(request.getParameter("type"), 16);
-            } catch (Exception e) {
-            }
-            if ("create".equalsIgnoreCase(action)) {
-                if (owner == null || name == null) {
+            if ("create".equalsIgnoreCase(in.action)) {
+                if (in.new_owner == null || in.new_name == null) {
                     response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                     return;
                 }
-                dev = dc.createDevice(owner, name, type, key, 0.1, 0.1);
+                dev = dc.createDevice(in.new_owner, in.new_name, in.getNewType(), in.new_key, 0.1, 0.1);
                 if (dev == null) {
                     response.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
                     return;
                 }
-            } else if ("delete".equalsIgnoreCase(action)) {
-                if (id == 0 || key == null) {
+            } else if ("delete".equalsIgnoreCase(in.action)) {
+                if (in.getId() == 0 || in.getKey() == null) {
                     response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                     return;
                 }
-                if (!dc.deleteDevice(id, key)) {
+                if (!dc.deleteDevice(in.getId(), in.getKey())) {
                     response.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
                     return;
                 }
@@ -73,37 +65,31 @@ public class API_DeviceManage extends HttpServlet {
                     w.println("status=SUCCESS");
                 }
                 return;
-            } else if ("edit".equalsIgnoreCase(action)) {
-                if (id == 0 || key == null) {
+            } else if ("edit".equalsIgnoreCase(in.action)) {
+                if (in.getId() == 0 || in.getKey() == null) {
                     response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                     return;
                 }
                 dev = new DeviceInfo();
-                if (request.getParameter("new_key")!=null){
-                    dev.setKey(request.getParameter("new_key"));
+                if (in.new_key!=null){
+                    dev.setKey(in.new_key);
                 }
-                if (request.getParameter("new_owner")!=null){
-                    dev.setOwner(request.getParameter("new_owner"));
+                if (in.new_owner!=null){
+                    dev.setOwner(in.new_owner);
                 }
-                if (request.getParameter("new_name")!=null){
-                    dev.setName(request.getParameter("new_name"));
+                if (in.new_name!=null){
+                    dev.setName(in.new_name);
                 }
-                if (request.getParameter("new_lat")!=null){
-                    try{
-                    dev.setLatitude(Double.parseDouble(request.getParameter("new_lat")));
-                    }catch (Exception e){}
+                if (in.new_lat!=null){
+                    dev.setLatitude(in.new_lat);
                 }
-                if (request.getParameter("new_lng")!=null){
-                    try{
-                    dev.setLongitude(Double.parseDouble(request.getParameter("new_lng")));
-                    }catch (Exception e){}
+                if (in.new_lng!=null){
+                    dev.setLatitude(in.new_lng);
                 }
-                if (request.getParameter("new_type")!=null){
-                    try{
-                    dev.setType(Long.parseUnsignedLong(request.getParameter("new_type"),16));
-                    }catch (Exception e){}
+                if (in.getNewType()!=0){
+                    dev.setType(in.getNewType());
                 }
-                if (!dc.updateDevice(id, key, dev)) {
+                if (!dc.updateDevice(in.getId(), in.key, dev)) {
                     response.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
                     return;
                 }
@@ -119,24 +105,7 @@ public class API_DeviceManage extends HttpServlet {
             }
             try (PrintWriter w = response.getWriter()) {
                 response.setStatus(HttpServletResponse.SC_OK);
-                w.println("status=$SUCCESS");
-                w.println("id=#" + Long.toUnsignedString(dev.getId(), 16));
-                w.println("key=$" + dev.getKeyString());
-                w.println("owner=$" + dev.getOwner());
-                w.println("name=$" + dev.getName());
-                w.println("type=#" + Long.toUnsignedString(dev.getType(), 16));
-                w.println("lat=#" + dev.getLatitude());
-                w.println("lng=#" + dev.getLongitude());
-                for (Entry<String, Double> e : dev.getNumbers().entrySet()) {
-                    if (e.getKey() != null && e.getValue() != null) {
-                        w.println(e.getKey() + "=#" + Double.toString(e.getValue()));
-                    }
-                }
-                for (Entry<String, String> e : dev.getStrings().entrySet()) {
-                    if (e.getKey() != null && e.getValue() != null) {
-                        w.println(e.getKey() + "=$" + e.getValue());
-                    }
-                }
+                w.println(DeviceInfo.toJson(dev));
             }
         }
         else{
@@ -183,4 +152,42 @@ public class API_DeviceManage extends HttpServlet {
         return "Short description";
     }// </editor-fold>
 
+    static class JDMR{
+        String id = null;
+        String key = null;
+        String action = null;
+        String new_key = null;
+        String new_type = null;
+        String new_jey = null;
+        String new_name = null;
+        String new_owner = null;
+        Double new_lat = null;
+        Double new_lng = null;
+        
+        long getNewType() {
+            if (new_type == null) {
+                return 0;
+            }
+            try {
+                return Long.parseUnsignedLong(new_type, 16);
+            } catch (Exception e) {
+            }
+            return 0;
+        }
+
+        long getId() {
+            if (id == null) {
+                return 0;
+            }
+            try {
+                return Long.parseUnsignedLong(id, 16);
+            } catch (Exception e) {
+            }
+            return 0;
+        }
+
+        String getKey() {
+            return key;
+        }
+    }
 }

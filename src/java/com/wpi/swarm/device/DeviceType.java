@@ -173,14 +173,15 @@ public class DeviceType {
         }
     }
     
-    public static String toJson(DeviceType type) {
+    public static JsonObjectBuilder toJson(DeviceType type) {
         JsonObjectBuilder obj = Json.createObjectBuilder();
         obj.add("type", type.getType());
+        obj.add("creator", type.creator);
         JsonObjectBuilder defs = Json.createObjectBuilder();
         for (ValueDef d : type.valDefs.values()){
             defs.add(d.getName(), Json.createObjectBuilder().add("fieldId", d.getFieldId()).add("type", d.getType().name()));
         }
         obj.add("defs", defs);
-        return obj.build().toString();
+        return obj;
     }
 }

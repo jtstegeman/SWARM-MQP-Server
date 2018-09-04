@@ -37,7 +37,7 @@ public class DeviceInfo {
     private String name = "";
     private double latitude = 0;
     private double longitude = 0;
-    private long lastActivity = 0;
+    private long lastActivity = System.currentTimeMillis();
     private final Map<String, Double> numbers = new HashMap<>();
     private final Map<String, String> strings = new HashMap<>();
 
@@ -492,9 +492,8 @@ public class DeviceInfo {
         m.getCollection(DeviceController.COLLECTION).createIndex(Indexes.hashed("key"));
     }
 
-    public static String toJson(DeviceInfo info) {
+    public static JsonObjectBuilder toJson(DeviceInfo info) {
         JsonObjectBuilder obj = Json.createObjectBuilder();
-        obj.add("status", "success");
         obj.add("id", info.getId());
         obj.add("key", info.getKeyString());
         obj.add("owner", info.getOwner());
@@ -512,6 +511,6 @@ public class DeviceInfo {
             strs.add(e.getKey(), e.getValue());
         }
         obj.add("nums", strs);
-        return obj.build().toString();
+        return obj;
     }
 }

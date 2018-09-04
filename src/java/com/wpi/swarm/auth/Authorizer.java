@@ -20,6 +20,10 @@ public class Authorizer {
         return true;
     }
     public static boolean authorizeDevice(MCon con, HttpServletRequest req){
-        return true;
+        return req.getParameter("key")!=null;
+    }
+    
+    public static String getUser(HttpServletRequest req){
+        return null;
     }
 }

@@ -139,7 +139,11 @@ public class DeviceController {
         if (d != null) {
             try {
                 DeviceInfo.enforceIndex(con);
-                con.getCollection(COLLECTION).find(d);
+                MongoCursor<Document> it = con.getCollection(COLLECTION).find(d).iterator();
+                TypeLoader loader = new TypeLoader(con);
+                if (it.hasNext()) {
+                    return DeviceInfo.makeDevInfo(loader,it.next());
+                }
             } catch (Exception e) {
                 return null;
             }
@@ -235,28 +239,17 @@ public class DeviceController {
     }
 
     public List<DeviceInfo> getOwnerDevices(String owner) {
-        List<DeviceInfo> dil = new ArrayList<>();
-        Document d = new Document("owner", owner);
-        if (d != null) {
-            try {
-                DeviceInfo.enforceIndex(con);
-                MongoCursor<Document> it = con.getCollection(COLLECTION).find(d).iterator();
-                TypeLoader loader = new TypeLoader(con);
-                while (it.hasNext()) {
-                    DeviceInfo i = DeviceInfo.makeDevInfo(loader,it.next());
-                    if (i != null) {
-                        dil.add(i);
-                    }
-                }
-            } catch (Exception e) {
-            }
-        }
-        return dil;
+        return getOwnerDevicesOfType(owner, 0);
     }
 
     public List<DeviceInfo> getOwnerDevicesOfType(String owner, long type) {
+        if (owner==null)
+            return null;
         List<DeviceInfo> dil = new ArrayList<>();
-        Document d = new Document("owner", owner).append("type", type);
+        Document d = new Document("owner", owner);
+        if (type!=0){
+            d.append("type", type);
+        }
         if (d != null) {
             try {
                 DeviceInfo.enforceIndex(con);

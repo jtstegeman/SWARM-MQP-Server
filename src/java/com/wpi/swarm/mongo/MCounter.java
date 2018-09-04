@@ -19,8 +19,6 @@
  */
 package com.wpi.swarm.mongo;
 
-import com.mongodb.MongoClient;
-import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.FindOneAndUpdateOptions;
 import java.util.HashSet;
 import java.util.Set;
