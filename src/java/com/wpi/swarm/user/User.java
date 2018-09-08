@@ -92,8 +92,9 @@ public class User {
             return false;
         }
         try {
-            Document d = new Document("_id", user.replace(".", "_")).append("temp", "").append("exp", 0).append("pass", hP).append("rec", hR);
-            return con.getCollection(COLLECTION).find(d).iterator().hasNext();
+            Document d = new Document("_id", user.replace(".", "_")).append("temp", "").append("exp", 0L).append("pass", hP).append("rec", hR);
+            con.getCollection(COLLECTION).insertOne(d);
+            return true;
         } catch (Exception e) {
         }
         return false;
@@ -106,9 +107,9 @@ public class User {
         Document d = new Document("_id", user.replace(".", "_")).append("temp", tempKey);
         MongoCursor<Document> it = con.getCollection(COLLECTION).find(d).iterator();
         if (it.hasNext()) {
-            Long exp = it.next().getLong("exp");
+            Document u = it.next();
+            Long exp = u.getLong("exp");
             if (exp != null && exp.longValue() > System.currentTimeMillis()) {
-                Document u = it.next();
                 String temp = u.getString("temp");
                 if (temp == null || exp.longValue() < System.currentTimeMillis() + 1800000) { // key expired
                     Document up = new Document();

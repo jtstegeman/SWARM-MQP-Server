@@ -203,7 +203,7 @@ public class DeviceController {
         Document u = DeviceInfo.makeUpdate(inf);
         if (d != null && u != null) {
             try {
-                DeviceInfo.enforceIndex(con);
+                DeviceInfo.enforceIndex(con);        
                 if (con.getCollection(COLLECTION).updateOne(d, new Document("$set", u), new UpdateOptions().upsert(true)).getMatchedCount() != 0) {
                     DeviceLogEntry.enforceIndex(con);
                     Document lg = DeviceLogEntry.makeInsertDoc(new DeviceLogEntry(inf));
@@ -213,6 +213,7 @@ public class DeviceController {
                     return true;
                 }
             } catch (Exception e) {
+                e.printStackTrace();
             }
         }
         return false;

@@ -103,6 +103,13 @@ public class API_DeviceType_JSON extends HttpServlet {
                     w.println(Json.createObjectBuilder().add("status", "SUCCESS").add("data", DeviceType.toJson(tp)).build().toString());
                 }
             } else {
+                if (DeviceType.create(m, tp)) {
+                    try (PrintWriter w = response.getWriter()) {
+                        response.setStatus(HttpServletResponse.SC_OK);
+                        w.println(Json.createObjectBuilder().add("status", "SUCCESS").add("data", DeviceType.toJson(tp)).build().toString());
+                    }
+                    return;
+                }
                 response.setStatus(HttpServletResponse.SC_NOT_FOUND);
                 return;
             }

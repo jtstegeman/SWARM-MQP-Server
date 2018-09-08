@@ -12,6 +12,7 @@ import com.wpi.swarm.device.DeviceInfo;
 import com.wpi.swarm.mongo.MCon;
 import java.io.IOException;
 import java.io.PrintWriter;
+import javax.json.Json;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -34,6 +35,7 @@ public class API_DeviceManage_JSON extends HttpServlet {
             try {
                 in = new Gson().fromJson(request.getReader(), JDMR.class);
             } catch (Exception e) {
+                e.printStackTrace();
             }
             if (in==null){
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -46,7 +48,7 @@ public class API_DeviceManage_JSON extends HttpServlet {
                     response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                     return;
                 }
-                dev = dc.createDevice(in.new_owner, in.new_name, in.getNewType(), in.new_key, 0.1, 0.1);
+                dev = dc.createDevice(in.new_owner, in.new_name, in.getNewType(), in.getNewKey(), 0.1, 0.1);
                 if (dev == null) {
                     response.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
                     return;
@@ -62,7 +64,6 @@ public class API_DeviceManage_JSON extends HttpServlet {
                 }
                 try (PrintWriter w = response.getWriter()) {
                     response.setStatus(HttpServletResponse.SC_OK);
-                    w.println("status=SUCCESS");
                 }
                 return;
             } else if ("edit".equalsIgnoreCase(in.action)) {
@@ -105,7 +106,7 @@ public class API_DeviceManage_JSON extends HttpServlet {
             }
             try (PrintWriter w = response.getWriter()) {
                 response.setStatus(HttpServletResponse.SC_OK);
-                w.println(DeviceInfo.toJson(dev));
+                w.println(Json.createObjectBuilder().add("status", "SUCCESS").add("data", DeviceInfo.toJson(dev)).build().toString());
             }
         }
         else{
@@ -158,7 +159,6 @@ public class API_DeviceManage_JSON extends HttpServlet {
         String action = null;
         String new_key = null;
         String new_type = null;
-        String new_jey = null;
         String new_name = null;
         String new_owner = null;
         Double new_lat = null;
@@ -189,5 +189,17 @@ public class API_DeviceManage_JSON extends HttpServlet {
         String getKey() {
             return key;
         }
+        String getNewKey(){
+            if (new_key==null){
+                return DeviceInfo.getRandomKeyString();
+            }
+            return new_key;
+        }
+
+        @Override
+        public String toString() {
+            return "JDMR{" + "id=" + id + ", key=" + key + ", action=" + action + ", new_key=" + new_key + ", new_type=" + new_type + ", new_name=" + new_name + ", new_owner=" + new_owner + ", new_lat=" + new_lat + ", new_lng=" + new_lng + '}';
+        }
+        
     }
 }

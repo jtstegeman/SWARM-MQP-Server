@@ -6,6 +6,7 @@
 package com.wpi.swarm.device;
 
 import com.mongodb.client.MongoCursor;
+import com.mongodb.client.model.UpdateOptions;
 import com.wpi.swarm.device.DeviceType.ValueDef.ValueType;
 import com.wpi.swarm.mongo.MCon;
 import java.util.ArrayList;
@@ -108,6 +109,7 @@ public class DeviceType {
             doc.put("name", def.getName());
             doc.put("type", def.getType().name());
             doc.put("field", def.getFieldId());
+            docs.add(doc);
         }
         d.put("vals", docs);
         try {
@@ -126,11 +128,13 @@ public class DeviceType {
             doc.put("name", def.getName());
             doc.put("type", def.getType().name());
             doc.put("field", def.getFieldId());
+            docs.add(doc);
         }
         d.put("vals", docs);
         try {
-            return con.getCollection(COLLECTION).updateOne(new Document("_id", tp.getType()).append("creator", tp.getCreator()), d).getMatchedCount() != 0;
+            return con.getCollection(COLLECTION).updateOne(new Document("_id", tp.getType()).append("creator", tp.getCreator()), new Document("$set",d), new UpdateOptions().upsert(true)).getMatchedCount() != 0;
         } catch (Exception e) {
+            e.printStackTrace();
         }
         return false;
     }

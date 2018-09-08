@@ -89,7 +89,7 @@ public class DeviceInfo {
     }
 
     public DeviceInfo setKey(byte[] key) {
-        if (!Arrays.equals(key, key)) {
+        if (!Arrays.equals(this.key, key)) {
             this.key = key;
             this.keyChange = true;
         }
@@ -373,14 +373,14 @@ public class DeviceInfo {
             if (!info.numbers.isEmpty()) {
                 Document vals = new Document();
                 for (Entry<String, Double> e : info.numbers.entrySet()) {
-                    doc.put(e.getKey(), e.getValue());
+                    vals.put(e.getKey(), e.getValue());
                 }
                 doc.put("nums", vals);
             }
             if (!info.strings.isEmpty()) {
                 Document vals = new Document();
                 for (Entry<String, String> e : info.strings.entrySet()) {
-                    doc.put(e.getKey(), e.getValue());
+                   vals.put(e.getKey(), e.getValue());
                 }
                 doc.put("strs", vals);
             }
@@ -389,13 +389,9 @@ public class DeviceInfo {
     }
 
     static Document makeUpdate(String devIdName, DeviceInfo info) {
-        if (info.key == null || info.id == 0) {
-            return null;
-        }
+        
         Document doc = new Document();
-        if (info.idChange) {
-            doc.put(devIdName, info.id);
-        }
+        
         if (info.ownerChanged && info.owner != null && info.owner.length() > 0) {
             doc.put("owner", info.owner);
         }
@@ -418,14 +414,14 @@ public class DeviceInfo {
             if (!info.numbers.isEmpty()) {
                 Document vals = new Document();
                 for (Entry<String, Double> e : info.numbers.entrySet()) {
-                    doc.put(e.getKey(), e.getValue());
+                    vals.put(e.getKey(), e.getValue());
                 }
                 doc.put("nums", vals);
             }
             if (!info.strings.isEmpty()) {
                 Document vals = new Document();
                 for (Entry<String, String> e : info.strings.entrySet()) {
-                    doc.put(e.getKey(), e.getValue());
+                    vals.put(e.getKey(), e.getValue());
                 }
                 doc.put("strs", vals);
             }
@@ -457,18 +453,21 @@ public class DeviceInfo {
         if (info.longitude != 0) {
             doc.put("lng", info.longitude);
         }
+        if (info.key.length<2){
+            info.key = getRandomKey();
+        }
         doc.put("key", Base64.getUrlEncoder().encodeToString(info.key));
         if (!info.numbers.isEmpty()) {
             Document vals = new Document();
             for (Entry<String, Double> e : info.numbers.entrySet()) {
-                doc.put(e.getKey(), e.getValue());
+                vals.put(e.getKey(), e.getValue());
             }
             doc.put("nums", vals);
         }
         if (!info.strings.isEmpty()) {
             Document vals = new Document();
             for (Entry<String, String> e : info.strings.entrySet()) {
-                doc.put(e.getKey(), e.getValue());
+                vals.put(e.getKey(), e.getValue());
             }
             doc.put("strs", vals);
         }
@@ -485,6 +484,9 @@ public class DeviceInfo {
 
     public static final byte[] getRandomKey() {
         return getRandomKey(DEFAULT_KEY_LEN);
+    }
+    public static final String getRandomKeyString() {
+        return Base64.getUrlEncoder().encodeToString(getRandomKey(DEFAULT_KEY_LEN));
     }
 
     public static void enforceIndex(MCon m) {
@@ -510,7 +512,7 @@ public class DeviceInfo {
         for (Entry<String, String> e : info.getStrings().entrySet()) {
             strs.add(e.getKey(), e.getValue());
         }
-        obj.add("nums", strs);
+        obj.add("strs", strs);
         return obj;
     }
 }

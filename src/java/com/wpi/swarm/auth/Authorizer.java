@@ -5,6 +5,7 @@
  */
 package com.wpi.swarm.auth;
 
+import com.wpi.swarm.device.DeviceController;
 import com.wpi.swarm.mongo.MCon;
 import com.wpi.swarm.user.User;
 import javax.servlet.http.Cookie;
@@ -18,7 +19,9 @@ import javax.servlet.http.HttpServletResponse;
 public class Authorizer {
 
     public static boolean authorize(MCon con, HttpServletRequest req) {
-        return Authorizer.authorizeDevice(con, req) || Authorizer.authorizeUser(con, req);
+        if (Authorizer.authorizeDevice(con, req))
+            return true;
+        return Authorizer.authorizeUser(con, req);
     }
 
     public static boolean authorizeUser(MCon con, HttpServletRequest req) {
@@ -39,13 +42,27 @@ public class Authorizer {
         if (user != null && temp != null) {
             return User.authUserTemp(con, user, temp) != null;
         } else if (user != null && pass != null) {
-            return User.authUserPwd(con, user, temp) != null;
+            return User.authUserPwd(con, user, pass) != null;
         }
-        return true;
+        return false;
     }
 
     public static boolean authorizeDevice(MCon con, HttpServletRequest req) {
-        return req.getParameter("key") != null;
+        long id = 0;
+        String key = null;
+        try {
+            id = Long.parseUnsignedLong(req.getParameter("id"), 16);
+        } catch (Exception e) {
+        }
+        try {
+            key = req.getParameter("key");
+        } catch (Exception e) {
+        }
+        if (id == 0 || key == null) {
+            return false;
+        }
+        DeviceController c = new DeviceController();
+        return c.getLatestDevice(id, key)!=null;
     }
 
     public static String getUsername(HttpServletRequest req) {
@@ -72,7 +89,11 @@ public class Authorizer {
                     if (r != null && r.length == 2) {
                         String temp = User.authUserTemp(con, r[0], r[1]);
                         if (temp != null) {
-                            resp.addCookie(new Cookie("swarmUser", r[0] + "." + temp));
+                            Cookie ck = new Cookie("swarmUser", r[0] + "." + temp);
+                            ck.setMaxAge(864000);
+                            ck.setHttpOnly(true);
+                            ck.setPath("/");
+                            resp.addCookie(ck);
                             return true;
                         }
                     }
@@ -85,16 +106,26 @@ public class Authorizer {
         if (user != null && temp != null) {
             String t = User.authUserTemp(con, user, temp);
             if (t != null) {
-                resp.addCookie(new Cookie("swarmUser", user + "." + temp));
+                Cookie ck = new Cookie("swarmUser", user + "." + t);
+                            ck.setMaxAge(864000);
+                            ck.setHttpOnly(true);
+                            ck.setPath("/");
+                            resp.addCookie(ck);
+                resp.addCookie(ck);
                 return true;
             }
         } else if (user != null && pass != null) {
-            String t = User.authUserPwd(con, user, temp);
+            String t = User.authUserPwd(con, user, pass);
             if (t != null) {
-                resp.addCookie(new Cookie("swarmUser", user + "." + temp));
+                Cookie ck = new Cookie("swarmUser", user + "." + t);
+                            ck.setMaxAge(864000);
+                            ck.setHttpOnly(true);
+                            ck.setPath("/");
+                            resp.addCookie(ck);
+                resp.addCookie(ck);
                 return true;
             }
         }
-        return true;
+        return false;
     }
 }

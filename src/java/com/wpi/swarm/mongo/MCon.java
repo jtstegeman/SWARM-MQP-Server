@@ -38,7 +38,7 @@ public class MCon {
     public MCon() {
         try {
             InitialContext ctx = new InitialContext();
-            mongoClientProvider = (MongoProvider) ctx.lookup("java:global/swarm/MongoProvider");
+            mongoClientProvider = (MongoProvider) ctx.lookup("java:global/SwarmMQP/MongoProvider");
         } catch (NamingException ex) {
             Logger.getLogger(MCon.class.getName()).log(Level.SEVERE, null, ex);
         }

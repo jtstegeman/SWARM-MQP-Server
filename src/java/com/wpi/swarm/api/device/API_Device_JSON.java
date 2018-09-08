@@ -108,7 +108,7 @@ public class API_Device_JSON extends HttpServlet {
                     if (def != null) {
                         try {
                             if (def.getType() == ValueType.NUMBER) {
-                                dev.setNumber(s, in.nums.getOrDefault(def, 0.0));
+                                dev.setNumber(s, in.nums.getOrDefault(s, 0.0));
                             }
                         } catch (Exception e) {
                         }
@@ -121,7 +121,7 @@ public class API_Device_JSON extends HttpServlet {
                     if (def != null) {
                         try {
                             if (def.getType() == ValueType.STRING) {
-                                dev.setString(s, in.strs.getOrDefault(def, ""));
+                                dev.setString(s, in.strs.getOrDefault(s, ""));
                             }
                         } catch (Exception e) {
                         }
