@@ -6,6 +6,7 @@
 package com.wpi.swarm.api.user;
 
 import com.wpi.swarm.api.device.*;
+import com.google.gson.Gson;
 import com.wpi.swarm.auth.Authorizer;
 import com.wpi.swarm.device.DeviceController;
 import com.wpi.swarm.device.DeviceInfo;
@@ -13,14 +14,12 @@ import com.wpi.swarm.device.DeviceType;
 import com.wpi.swarm.device.DeviceType.ValueDef;
 import com.wpi.swarm.device.DeviceType.ValueDef.ValueType;
 import com.wpi.swarm.mongo.MCon;
-import com.wpi.swarm.user.User;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.math.BigDecimal;
-import java.util.Map.Entry;
-import java.util.Objects;
+import java.util.Map;
 import javax.json.Json;
 import javax.servlet.ServletException;
+import javax.servlet.ServletInputStream;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -30,8 +29,8 @@ import javax.servlet.http.HttpServletResponse;
  *
  * @author jtste
  */
-@WebServlet(name = "API_TEST", urlPatterns = {"/api/live"})
-public class API_TEST extends HttpServlet {
+@WebServlet(name = "API_BINTEST", urlPatterns = {"/api/bintest"})
+public class API_BINTEST extends HttpServlet {
 
     // <editor-fold >
     /**
@@ -45,14 +44,19 @@ public class API_TEST extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        System.out.println("TEST GET");
-        for (String s : request.getParameterMap().keySet()){
-            System.out.println(s+": "+request.getParameter(s));
+        System.out.println("CONNECTED");
+        response.setContentType("application/octet-stream");
+        
+        
+        try (ServletInputStream in = request.getInputStream()) {
+            int v = in.read();
+            while (v!=-1){
+                System.out.print(Integer.toHexString((v >> 4) & 0xF) + Integer.toHexString((v >> 0) & 0xF) + " ");
+                v = in.read();
+            }
+            response.setStatus(HttpServletResponse.SC_OK);
         }
-        response.setContentType("application/json");
-        try (PrintWriter w = response.getWriter()) {
-            w.println(Json.createObjectBuilder().add("status", "SUCCESS").add("live", true).build().toString());
-        }
+        System.out.println();
     }
 
     /**
@@ -66,14 +70,8 @@ public class API_TEST extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        System.out.println("TEST POST");
-        for (String s : request.getParameterMap().keySet()){
-            System.out.println(s+": "+request.getParameter(s));
-        }
-        response.setContentType("application/json");
-        try (PrintWriter w = response.getWriter()) {
-            w.println(Json.createObjectBuilder().add("status", "SUCCESS").add("live", true).build().toString());
-        }
+        System.out.println("CONNECTED");
+        doGet(request, response);
     }
 
     /**
@@ -85,5 +83,4 @@ public class API_TEST extends HttpServlet {
     public String getServletInfo() {
         return "Short description";
     }// </editor-fold>
-
 }

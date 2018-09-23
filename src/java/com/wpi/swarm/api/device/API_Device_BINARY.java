@@ -176,6 +176,7 @@ public class API_Device_BINARY extends HttpServlet {
                             count++;
                         } else {
                             nval <<= 8;
+                            nval |= v;
                             count++;
                         }
                         if (count == 4) {
@@ -202,11 +203,11 @@ public class API_Device_BINARY extends HttpServlet {
                 }
                 v = in.read();
             }
-            if (state!=17 || inf==null){
+            if (state != 17 || inf == null) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 return;
             }
-            if (inf.changed()){
+            if (inf.changed()) {
                 c.updateDevice(id, key, inf);
             }
             response.setStatus(HttpServletResponse.SC_OK);
@@ -236,41 +237,4 @@ public class API_Device_BINARY extends HttpServlet {
     public String getServletInfo() {
         return "Short description";
     }// </editor-fold>
-
-    static final class JDR {
-
-        String key = null;
-        String type = null;
-        String id = null;
-        Double lat = null;
-        Double lng = null;
-        Map<String, Double> nums = null;
-        Map<String, String> strs = null;
-
-        long getType() {
-            if (type == null) {
-                return 0;
-            }
-            try {
-                return Long.parseUnsignedLong(type, 16);
-            } catch (Exception e) {
-            }
-            return 0;
-        }
-
-        long getId() {
-            if (id == null) {
-                return 0;
-            }
-            try {
-                return Long.parseUnsignedLong(id, 16);
-            } catch (Exception e) {
-            }
-            return 0;
-        }
-
-        String getKey() {
-            return key;
-        }
-    }
 }
