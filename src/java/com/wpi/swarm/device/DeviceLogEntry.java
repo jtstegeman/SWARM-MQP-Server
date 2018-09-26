@@ -19,22 +19,24 @@ public class DeviceLogEntry {
     private final DeviceInfo inf;
     private final String msg;
     private long activity = System.currentTimeMillis();
+    private final long id;
 
-    public DeviceLogEntry(DeviceInfo info, String message) {
+    public DeviceLogEntry(long id, DeviceInfo info, String message) {
         inf = info;
+        this.id = id;
         msg = message;
     }
 
-    public DeviceLogEntry(DeviceInfo info) {
-        this(info, null);
+    public DeviceLogEntry(long id, DeviceInfo info) {
+        this(id, info, null);
     }
 
-    public DeviceLogEntry(String message) {
-        this(null, message);
+    public DeviceLogEntry(long id, String message) {
+        this(id, null, message);
     }
 
-    private DeviceLogEntry() {
-        this(null, null);
+    private DeviceLogEntry(long id) {
+        this(id, null, null);
     }
 
     public DeviceInfo getDeviceInfo() {
@@ -47,6 +49,10 @@ public class DeviceLogEntry {
 
     public long getTimeStamp() {
         return this.activity;
+    }
+    
+    public long getDeviceId(){
+        return id;
     }
 
     public static Document makeInsertDoc(DeviceLogEntry log) {
@@ -65,6 +71,7 @@ public class DeviceLogEntry {
             d = new Document();
             d.append("activity", System.currentTimeMillis());
         }
+        d.append("devid", log.id);
         if (log.msg != null && log.msg.length() > 0) {
             d.append("msg", log.msg);
         }
@@ -85,7 +92,7 @@ public class DeviceLogEntry {
         if (doc == null) {
             return null;
         }
-        DeviceLogEntry e = new DeviceLogEntry(DeviceInfo.makeDevInfo("devid", loader, doc), doc.getString("msg"));
+        DeviceLogEntry e = new DeviceLogEntry(doc.getLong("devid"),DeviceInfo.makeDevInfo("devid", loader, doc), doc.getString("msg"));
         try {
             e.activity = doc.getLong("activity");
         } catch (Exception ex) {

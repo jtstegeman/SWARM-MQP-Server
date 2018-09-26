@@ -110,6 +110,7 @@ public class API_DeviceType_JSON extends HttpServlet {
                     }
                     return;
                 }
+                System.out.println("DREATE ERROR");
                 response.setStatus(HttpServletResponse.SC_NOT_FOUND);
                 return;
             }

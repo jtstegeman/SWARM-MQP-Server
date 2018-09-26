@@ -43,6 +43,7 @@ public class API_Device_BINARY extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        System.out.println("Bin");
         response.setContentType("application/octet-stream");
         MCon m = new MCon();
         try (ServletInputStream in = request.getInputStream()) {
@@ -69,14 +70,16 @@ public class API_Device_BINARY extends HttpServlet {
                             state = 1;
                         }
                         break;
-
                     case 1:
-                        id = v;
-                        state = 2;
+                        if (v != 0xAA) {
+                            state = -1;
+                        } else {
+                            state = 2;
+                        }
                         break;
+
                     case 2:
-                        id <<= 8;
-                        id |= v;
+                        id = v;
                         state = 3;
                         break;
                     case 3:
@@ -109,44 +112,49 @@ public class API_Device_BINARY extends HttpServlet {
                         id |= v;
                         state = 9;
                         break;
-
                     case 9:
-                        key[0] = (byte) v;
+                        id <<= 8;
+                        id |= v;
                         state = 10;
                         break;
+
                     case 10:
-                        key[1] = (byte) v;
+                        key[0] = (byte) v;
                         state = 11;
                         break;
                     case 11:
-                        key[2] = (byte) v;
+                        key[1] = (byte) v;
                         state = 12;
                         break;
                     case 12:
-                        key[3] = (byte) v;
+                        key[2] = (byte) v;
                         state = 13;
                         break;
                     case 13:
-                        key[4] = (byte) v;
+                        key[3] = (byte) v;
                         state = 14;
                         break;
                     case 14:
-                        key[5] = (byte) v;
+                        key[4] = (byte) v;
                         state = 15;
                         break;
                     case 15:
-                        key[6] = (byte) v;
+                        key[5] = (byte) v;
                         state = 16;
                         break;
                     case 16:
-                        key[7] = (byte) v;
+                        key[6] = (byte) v;
                         state = 17;
+                        break;
+                    case 17:
+                        key[7] = (byte) v;
+                        state = 18;
                         inf = c.getLatestDevice(id, key);
                         if (inf != null) {
                             type = DeviceType.load(m, inf.getType());
                             if (type != null) {
                                 inf = new DeviceInfo();
-                                state = 17;
+                                state = 18;
                             } else {
                                 state = -3;
                             }
@@ -155,22 +163,22 @@ public class API_Device_BINARY extends HttpServlet {
                         }
                         break;
 
-                    case 17:
+                    case 18:
                         if (type == null) {
                             state = -4;
                             break;
                         }
                         vdef = type.getDef(v);
                         if (vdef != null && vdef.getType() == ValueType.NUMBER) {
-                            state = 18;
-                            count = 0;
-                        }
-                        if (vdef != null && vdef.getType() == ValueType.STRING) {
                             state = 19;
                             count = 0;
                         }
+                        if (vdef != null && vdef.getType() == ValueType.STRING) {
+                            state = 20;
+                            count = 0;
+                        }
                         break;
-                    case 18: // number
+                    case 19: // number
                         if (count == 0) {
                             nval = v;
                             count++;
@@ -183,10 +191,10 @@ public class API_Device_BINARY extends HttpServlet {
                             if (inf != null && vdef != null) {
                                 inf.setNumber(vdef.getName(), (double) Float.intBitsToFloat(nval));
                             }
-                            state = 17;
+                            state = 18;
                         }
                         break;
-                    case 19: // string
+                    case 20: // string
                         if (count == 0) {
                             sval = "";
                         }
@@ -194,7 +202,7 @@ public class API_Device_BINARY extends HttpServlet {
                             if (inf != null && vdef != null) {
                                 inf.setString(vdef.getName(), sval);
                             }
-                            state = 17;
+                            state = 18;
                         } else {
                             count++;
                             sval += (char) v;
@@ -203,7 +211,7 @@ public class API_Device_BINARY extends HttpServlet {
                 }
                 v = in.read();
             }
-            if (state != 17 || inf == null) {
+            if (state != 18 || inf == null) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 return;
             }

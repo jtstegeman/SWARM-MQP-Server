@@ -47,16 +47,16 @@ public class API_BINTEST extends HttpServlet {
         System.out.println("CONNECTED");
         response.setContentType("application/octet-stream");
         
-        
+        StringBuilder b = new StringBuilder();
         try (ServletInputStream in = request.getInputStream()) {
             int v = in.read();
             while (v!=-1){
-                System.out.print(Integer.toHexString((v >> 4) & 0xF) + Integer.toHexString((v >> 0) & 0xF) + " ");
+                b.append(Integer.toHexString((v >> 4) & 0xF)).append(Integer.toHexString((v >> 0) & 0xF)).append(" ");
                 v = in.read();
             }
             response.setStatus(HttpServletResponse.SC_OK);
         }
-        System.out.println();
+        System.out.println(b.toString());
     }
 
     /**

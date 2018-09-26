@@ -49,7 +49,7 @@ public class DeviceController {
                 DeviceInfo.enforceIndex(con);
                 con.getCollection(COLLECTION).insertOne(d);
                 DeviceLogEntry.enforceIndex(con);
-                Document lg = DeviceLogEntry.makeInsertDoc(new DeviceLogEntry(inf, "Device created"));
+                Document lg = DeviceLogEntry.makeInsertDoc(new DeviceLogEntry(id, inf, "Device created"));
                 if (lg != null) {
                     con.getCollection(DEV_LOG_COLLECTION).insertOne(lg);
                 }
@@ -71,7 +71,7 @@ public class DeviceController {
                 DeviceInfo.enforceIndex(con);
                 con.getCollection(COLLECTION).insertOne(d);
                 DeviceLogEntry.enforceIndex(con);
-                Document lg = DeviceLogEntry.makeInsertDoc(new DeviceLogEntry(inf, "Device created"));
+                Document lg = DeviceLogEntry.makeInsertDoc(new DeviceLogEntry(id, "Device created"));
                 if (lg != null) {
                     con.getCollection(DEV_LOG_COLLECTION).insertOne(lg);
                 }
@@ -92,7 +92,7 @@ public class DeviceController {
                 DeleteResult deleteOne = con.getCollection(COLLECTION).deleteOne(d);
                 if (deleteOne.getDeletedCount() != 0) {
                     DeviceLogEntry.enforceIndex(con);
-                    Document lg = DeviceLogEntry.makeInsertDoc(new DeviceLogEntry("Device deleted"));
+                    Document lg = DeviceLogEntry.makeInsertDoc(new DeviceLogEntry(id, "Device deleted"));
                     if (lg != null) {
                         con.getCollection(DEV_LOG_COLLECTION).insertOne(lg);
                     }
@@ -115,7 +115,7 @@ public class DeviceController {
                 DeleteResult deleteOne = con.getCollection(COLLECTION).deleteOne(d);
                 if (deleteOne.getDeletedCount() != 0) {
                     DeviceLogEntry.enforceIndex(con);
-                    Document lg = DeviceLogEntry.makeInsertDoc(new DeviceLogEntry("Device deleted"));
+                    Document lg = DeviceLogEntry.makeInsertDoc(new DeviceLogEntry(id, "Device deleted"));
                     if (lg != null) {
                         con.getCollection(DEV_LOG_COLLECTION).insertOne(lg);
                     }
@@ -142,7 +142,7 @@ public class DeviceController {
                 MongoCursor<Document> it = con.getCollection(COLLECTION).find(d).iterator();
                 TypeLoader loader = new TypeLoader(con);
                 if (it.hasNext()) {
-                    return DeviceInfo.makeDevInfo(loader,it.next());
+                    return DeviceInfo.makeDevInfo(loader, it.next());
                 }
             } catch (Exception e) {
                 return null;
@@ -162,7 +162,7 @@ public class DeviceController {
                 MongoCursor<Document> it = con.getCollection(COLLECTION).find(d).iterator();
                 TypeLoader loader = new TypeLoader(con);
                 if (it.hasNext()) {
-                    return DeviceInfo.makeDevInfo(loader,it.next());
+                    return DeviceInfo.makeDevInfo(loader, it.next());
                 }
             } catch (Exception e) {
                 return null;
@@ -185,7 +185,7 @@ public class DeviceController {
                 DeviceInfo.enforceIndex(con);
                 if (con.getCollection(COLLECTION).updateOne(d, new Document("$set", u), new UpdateOptions().upsert(true)).getMatchedCount() != 0) {
                     DeviceLogEntry.enforceIndex(con);
-                    Document lg = DeviceLogEntry.makeInsertDoc(new DeviceLogEntry(inf));
+                    Document lg = DeviceLogEntry.makeInsertDoc(new DeviceLogEntry(id, inf));
                     if (lg != null) {
                         con.getCollection(DEV_LOG_COLLECTION).insertOne(lg);
                     }
@@ -203,10 +203,10 @@ public class DeviceController {
         Document u = DeviceInfo.makeUpdate(inf);
         if (d != null && u != null) {
             try {
-                DeviceInfo.enforceIndex(con);        
+                DeviceInfo.enforceIndex(con);
                 if (con.getCollection(COLLECTION).updateOne(d, new Document("$set", u), new UpdateOptions().upsert(true)).getMatchedCount() != 0) {
                     DeviceLogEntry.enforceIndex(con);
-                    Document lg = DeviceLogEntry.makeInsertDoc(new DeviceLogEntry(inf));
+                    Document lg = DeviceLogEntry.makeInsertDoc(new DeviceLogEntry(id, inf));
                     if (lg != null) {
                         con.getCollection(DEV_LOG_COLLECTION).insertOne(lg);
                     }
@@ -220,6 +220,9 @@ public class DeviceController {
     }
 
     public boolean updateDevice(DeviceInfo inf) {
+        if (inf.getId() == 0) {
+            return false;
+        }
         Document d = DeviceInfo.makeFind(inf);
         Document u = DeviceInfo.makeUpdate(inf);
         if (d != null && u != null) {
@@ -227,7 +230,7 @@ public class DeviceController {
                 DeviceInfo.enforceIndex(con);
                 if (con.getCollection(COLLECTION).updateOne(d, new Document("$set", u), new UpdateOptions().upsert(true)).getMatchedCount() != 0) {
                     DeviceLogEntry.enforceIndex(con);
-                    Document lg = DeviceLogEntry.makeInsertDoc(new DeviceLogEntry(inf));
+                    Document lg = DeviceLogEntry.makeInsertDoc(new DeviceLogEntry(inf.getId(), inf));
                     if (lg != null) {
                         con.getCollection(DEV_LOG_COLLECTION).insertOne(lg);
                     }
@@ -244,11 +247,12 @@ public class DeviceController {
     }
 
     public List<DeviceInfo> getOwnerDevicesOfType(String owner, long type) {
-        if (owner==null)
+        if (owner == null) {
             return null;
+        }
         List<DeviceInfo> dil = new ArrayList<>();
         Document d = new Document("owner", owner);
-        if (type!=0){
+        if (type != 0) {
             d.append("type", type);
         }
         if (d != null) {
@@ -257,7 +261,7 @@ public class DeviceController {
                 MongoCursor<Document> it = con.getCollection(COLLECTION).find(d).iterator();
                 TypeLoader loader = new TypeLoader(con);
                 while (it.hasNext()) {
-                    DeviceInfo i = DeviceInfo.makeDevInfo(loader,it.next());
+                    DeviceInfo i = DeviceInfo.makeDevInfo(loader, it.next());
                     if (i != null) {
                         dil.add(i);
                     }
