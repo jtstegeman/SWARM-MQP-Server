@@ -49,6 +49,12 @@ public class API_Device_JSON extends HttpServlet {
             JDR in = null;
             try {
                 in = new Gson().fromJson(request.getReader(), JDR.class);
+                if (in == null) {
+                    in = new JDR();
+                    in.id = request.getParameter("id");
+                    in.type = request.getParameter("type");
+                    in.key = request.getParameter("key");
+                }
             } catch (Exception e) {
             }
             if (in == null || in.getId() == 0 || in.getKey() == null) {

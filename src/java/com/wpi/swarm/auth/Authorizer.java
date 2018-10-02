@@ -19,8 +19,9 @@ import javax.servlet.http.HttpServletResponse;
 public class Authorizer {
 
     public static boolean authorize(MCon con, HttpServletRequest req) {
-        if (Authorizer.authorizeDevice(con, req))
+        if (Authorizer.authorizeDevice(con, req)) {
             return true;
+        }
         return Authorizer.authorizeUser(con, req);
     }
 
@@ -62,7 +63,7 @@ public class Authorizer {
             return false;
         }
         DeviceController c = new DeviceController();
-        return c.getLatestDevice(id, key)!=null;
+        return c.getLatestDevice(id, key) != null;
     }
 
     public static String getUsername(HttpServletRequest req) {
@@ -78,6 +79,15 @@ public class Authorizer {
             }
         }
         return req.getParameter("user");
+    }
+
+    public static boolean logoutUser(HttpServletResponse resp) {
+        Cookie ck = new Cookie("swarmUser", null);
+        ck.setMaxAge(0);
+        ck.setHttpOnly(true);
+        ck.setPath("/");
+        resp.addCookie(ck);
+        return true;
     }
 
     public static boolean loginUser(MCon con, HttpServletRequest req, HttpServletResponse resp) {
@@ -107,10 +117,10 @@ public class Authorizer {
             String t = User.authUserTemp(con, user, temp);
             if (t != null) {
                 Cookie ck = new Cookie("swarmUser", user + "." + t);
-                            ck.setMaxAge(864000);
-                            ck.setHttpOnly(true);
-                            ck.setPath("/");
-                            resp.addCookie(ck);
+                ck.setMaxAge(864000);
+                ck.setHttpOnly(true);
+                ck.setPath("/");
+                resp.addCookie(ck);
                 resp.addCookie(ck);
                 return true;
             }
@@ -118,10 +128,10 @@ public class Authorizer {
             String t = User.authUserPwd(con, user, pass);
             if (t != null) {
                 Cookie ck = new Cookie("swarmUser", user + "." + t);
-                            ck.setMaxAge(864000);
-                            ck.setHttpOnly(true);
-                            ck.setPath("/");
-                            resp.addCookie(ck);
+                ck.setMaxAge(864000);
+                ck.setHttpOnly(true);
+                ck.setPath("/");
+                resp.addCookie(ck);
                 resp.addCookie(ck);
                 return true;
             }
