@@ -213,7 +213,6 @@ public class DeviceController {
                     return true;
                 }
             } catch (Exception e) {
-                e.printStackTrace();
             }
         }
         return false;
@@ -270,5 +269,25 @@ public class DeviceController {
             }
         }
         return dil;
+    }
+    
+    public List<DeviceLogEntry> getDeviceHistory(long id, long since, long before) {
+        List<DeviceLogEntry> dll = new ArrayList<>();
+        Document d = DeviceLogEntry.makeSearchDoc(id, since, before);
+        if (d != null) {
+            try {
+                DeviceLogEntry.enforceIndex(con);
+                MongoCursor<Document> it = con.getCollection(DEV_LOG_COLLECTION).find(d).iterator();
+                TypeLoader loader = new TypeLoader(con);
+                while (it.hasNext()) {
+                    DeviceLogEntry i = DeviceLogEntry.makeLogEntry(loader, it.next());
+                    if (i != null) {
+                        dll.add(i);
+                    }
+                }
+            } catch (Exception e) {
+            }
+        }
+        return dll;
     }
 }

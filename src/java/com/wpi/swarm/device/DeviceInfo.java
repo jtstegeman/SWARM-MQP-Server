@@ -380,7 +380,7 @@ public class DeviceInfo {
             if (!info.strings.isEmpty()) {
                 Document vals = new Document();
                 for (Entry<String, String> e : info.strings.entrySet()) {
-                   vals.put(e.getKey(), e.getValue());
+                    vals.put(e.getKey(), e.getValue());
                 }
                 doc.put("strs", vals);
             }
@@ -389,9 +389,9 @@ public class DeviceInfo {
     }
 
     static Document makeUpdate(String devIdName, DeviceInfo info) {
-        
+
         Document doc = new Document();
-        
+
         if (info.ownerChanged && info.owner != null && info.owner.length() > 0) {
             doc.put("owner", info.owner);
         }
@@ -453,7 +453,7 @@ public class DeviceInfo {
         if (info.longitude != 0) {
             doc.put("lng", info.longitude);
         }
-        if (info.key.length<2){
+        if (info.key.length < 2) {
             info.key = getRandomKey();
         }
         doc.put("key", Base64.getUrlEncoder().encodeToString(info.key));
@@ -485,6 +485,7 @@ public class DeviceInfo {
     public static final byte[] getRandomKey() {
         return getRandomKey(DEFAULT_KEY_LEN);
     }
+
     public static final String getRandomKeyString() {
         return Base64.getUrlEncoder().encodeToString(getRandomKey(DEFAULT_KEY_LEN));
     }

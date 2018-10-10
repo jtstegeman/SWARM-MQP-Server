@@ -7,8 +7,10 @@ package com.wpi.swarm.device;
 
 import com.mongodb.client.model.Indexes;
 import com.wpi.swarm.mongo.MCon;
+import java.math.BigDecimal;
+import javax.json.Json;
+import javax.json.JsonObjectBuilder;
 import org.bson.Document;
-import org.bson.types.ObjectId;
 
 /**
  *
@@ -50,8 +52,8 @@ public class DeviceLogEntry {
     public long getTimeStamp() {
         return this.activity;
     }
-    
-    public long getDeviceId(){
+
+    public long getDeviceId() {
         return id;
     }
 
@@ -78,8 +80,13 @@ public class DeviceLogEntry {
         return d;
     }
 
-    public static Document makeSearchDoc(long id, long cutoffTime) {
-        Document d = new Document("devid", id).append("activity", new Document("$gt", cutoffTime));
+    public static Document makeSearchDoc(long id, long since) {
+        Document d = new Document("devid", id).append("activity", new Document("$gt", since));
+        return d;
+    }
+
+    public static Document makeSearchDoc(long id, long since, long before) {
+        Document d = new Document("devid", id).append("activity", new Document("$gt", since).append("$lt", before));
         return d;
     }
 
@@ -92,7 +99,7 @@ public class DeviceLogEntry {
         if (doc == null) {
             return null;
         }
-        DeviceLogEntry e = new DeviceLogEntry(doc.getLong("devid"),DeviceInfo.makeDevInfo("devid", loader, doc), doc.getString("msg"));
+        DeviceLogEntry e = new DeviceLogEntry(doc.getLong("devid"), DeviceInfo.makeDevInfo("devid", loader, doc), doc.getString("msg"));
         try {
             e.activity = doc.getLong("activity");
         } catch (Exception ex) {
@@ -104,6 +111,19 @@ public class DeviceLogEntry {
     public static void enforceIndex(MCon m) {
         m.getCollection(DeviceController.DEV_LOG_COLLECTION).createIndex(Indexes.hashed("devid"));
         m.getCollection(DeviceController.DEV_LOG_COLLECTION).createIndex(Indexes.descending("activity"));
+    }
+
+    public static JsonObjectBuilder toJson(DeviceLogEntry e) {
+        JsonObjectBuilder obj = Json.createObjectBuilder();
+        obj.add("activity", e.activity);
+        obj.add("id", e.id);
+        if (e.msg != null) {
+            obj.add("msg", e.msg);
+        }
+        if (e.inf != null) {
+            obj.add("state", DeviceInfo.toJson(e.inf));
+        }
+        return obj;
     }
 
 }

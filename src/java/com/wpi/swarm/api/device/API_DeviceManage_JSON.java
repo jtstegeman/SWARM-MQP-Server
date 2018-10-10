@@ -34,6 +34,22 @@ public class API_DeviceManage_JSON extends HttpServlet {
             JDMR in = null;
             try {
                 in = new Gson().fromJson(request.getReader(), JDMR.class);
+                if (in==null){
+                    in = new JDMR();
+                    in.action = request.getParameter("action");
+                    in.id = request.getParameter("id");
+                    in.key = request.getParameter("key");
+                    in.new_key = request.getParameter("new_key");
+                    try{
+                        in.new_lat = Double.parseDouble(request.getParameter("new_lat"));
+                    }catch (Exception e){}
+                    try{
+                        in.new_lng = Double.parseDouble(request.getParameter("new_lng"));
+                    }catch (Exception e){}
+                    in.new_name = request.getParameter("new_name");
+                    in.new_owner = request.getParameter("new_owner");
+                    in.new_type = request.getParameter("new_type");
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -41,6 +57,7 @@ public class API_DeviceManage_JSON extends HttpServlet {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 return;
             }
+            System.out.println(in);
             DeviceController dc = new DeviceController(m);
             DeviceInfo dev = null;
             if ("create".equalsIgnoreCase(in.action)) {
@@ -64,6 +81,7 @@ public class API_DeviceManage_JSON extends HttpServlet {
                 }
                 try (PrintWriter w = response.getWriter()) {
                     response.setStatus(HttpServletResponse.SC_OK);
+                    w.println(Json.createObjectBuilder().add("status", "SUCCESS").build().toString());
                 }
                 return;
             } else if ("edit".equalsIgnoreCase(in.action)) {
@@ -85,7 +103,7 @@ public class API_DeviceManage_JSON extends HttpServlet {
                     dev.setLatitude(in.new_lat);
                 }
                 if (in.new_lng!=null){
-                    dev.setLatitude(in.new_lng);
+                    dev.setLongitude(in.new_lng);
                 }
                 if (in.getNewType()!=0){
                     dev.setType(in.getNewType());
@@ -94,6 +112,7 @@ public class API_DeviceManage_JSON extends HttpServlet {
                     response.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
                     return;
                 }
+                dev.setId(in.getId());
                 dev = dc.getLatestDevice(dev);
             } else {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -169,7 +188,7 @@ public class API_DeviceManage_JSON extends HttpServlet {
                 return 0;
             }
             try {
-                return Long.parseUnsignedLong(new_type, 16);
+                return Long.parseUnsignedLong(new_type);
             } catch (Exception e) {
             }
             return 0;
@@ -180,7 +199,7 @@ public class API_DeviceManage_JSON extends HttpServlet {
                 return 0;
             }
             try {
-                return Long.parseUnsignedLong(id, 16);
+                return Long.parseUnsignedLong(id);
             } catch (Exception e) {
             }
             return 0;

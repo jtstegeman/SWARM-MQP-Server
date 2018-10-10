@@ -49,7 +49,7 @@ public class API_DeviceList_JSON extends HttpServlet {
         if (Authorizer.authorizeUser(m, request)) {
             long type = 0;
             try {
-                type = Long.parseUnsignedLong(request.getParameter("type"), 16);
+                type = Long.parseUnsignedLong(request.getParameter("type"));
             } catch (Exception e) {
             }
             DeviceController c = new DeviceController(m);

@@ -48,6 +48,11 @@ public class API_DeviceType_JSON extends HttpServlet {
             JDTR in = null;
             try {
                 in = new Gson().fromJson(request.getReader(), JDTR.class);
+                if (in==null){
+                    in = new JDTR();
+                    in.creator = request.getParameter("creator");
+                    in.type = request.getParameter("type");
+                }
             } catch (Exception e) {
             }
             if (in == null || in.getType() == 0) {
@@ -141,7 +146,7 @@ public class API_DeviceType_JSON extends HttpServlet {
                 return 0;
             }
             try {
-                return Long.parseUnsignedLong(type, 16);
+                return Long.parseUnsignedLong(type);
             } catch (Exception e) {
             }
             return 0;
