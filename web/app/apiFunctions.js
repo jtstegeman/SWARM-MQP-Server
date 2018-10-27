@@ -58,10 +58,10 @@ window.swarmApi.logout = function () {
     });
 };
 
-window.swarmApi.getUserDevices = function (success, err) {
+window.swarmApi.getUserNodes = function (success, err) {
     $.ajax({
         type: "GET",
-        url: baseUrl + "json/deviceList",
+        url: baseUrl + "node/user",
         success: function (result) {
             if (typeof (success) === 'function') {
                 success(result);
@@ -75,11 +75,11 @@ window.swarmApi.getUserDevices = function (success, err) {
     });
 };
 
-window.swarmApi.getDevice = function (id, key, type, success, err) {
+window.swarmApi.getNode = function (id, key, success, err) {
     $.ajax({
         type: "GET",
-        url: baseUrl + "json/device",
-        data: {id: id, key: key, type: type},
+        url: baseUrl + "node",
+        data: {id: id, key: key},
         success: function (result) {
             if (typeof (success) === 'function') {
                 success(result);
@@ -93,13 +93,11 @@ window.swarmApi.getDevice = function (id, key, type, success, err) {
     });
 };
 
-window.swarmApi.deleteDevice = function (id, key, success, err) {
+window.swarmApi.deleteNode = function (id, key, success, err) {
     $.ajax({
         type: "POST",
-        url: baseUrl + "json/device/manage",
-        data: JSON.stringify({id: id, key: key, action: 'delete'}),
-        contentType: 'application/json; charset=utf-8',
-        dataType: 'json',
+        url: baseUrl + "node/delete",
+        data: {id: id, key: key},
         success: function (result) {
             if (typeof (success) === 'function') {
                 success(result);
@@ -113,55 +111,42 @@ window.swarmApi.deleteDevice = function (id, key, success, err) {
     });
 };
 
-window.swarmApi.createDevice = function (type, name, success, err) {
-    swarmApi.checkLoginInfo(function (usr) {
-        $.ajax({
-            type: "POST",
-            url: baseUrl + "json/device/manage",
-            data: JSON.stringify({new_owner: usr.name, new_name: name, new_type: type, action: 'create'}),
-            contentType: 'application/json; charset=utf-8',
-            dataType: 'json',
-            success: function (result) {
-                if (typeof (success) === 'function') {
-                    success(result);
-                }
-            },
-            err: function (result) {
-                if (typeof (err) === 'function') {
-                    err();
-                }
+window.swarmApi.createNode = function (name, lat, lng, success, err) {
+    $.ajax({
+        type: "POST",
+        url: baseUrl + "node/create",
+        data: {latitude: lat, longitude: lng, name: name},
+        success: function (result) {
+            if (typeof (success) === 'function') {
+                success(result);
             }
-        });
-    }, function () {
-        if (typeof (err) === 'function') {
-            err();
+        },
+        err: function (result) {
+            if (typeof (err) === 'function') {
+                err();
+            }
         }
-    })
-}
+    });
+};
 
-window.swarmApi.updateDevice = function (id, key, new_key, new_type, new_name, new_lat, new_lng, success, err) {
-    var data = {id: id, key: key, action: 'edit'};
+window.swarmApi.updateNode = function (id, key, new_key, new_name, new_lat, new_lng, success, err) {
+    var data = {id: id, key: key};
     if (new_key != undefined) {
-        data.new_key = new_key;
-    }
-    if (new_type != undefined) {
-        data.new_type = new_type;
+        data.nKey = new_key;
     }
     if (new_name != undefined) {
-        data.new_name = new_name;
+        data.name = new_name;
     }
     if (new_lat != undefined) {
-        data.new_lat = new_lat;
+        data.latitude = new_lat;
     }
     if (new_lng != undefined) {
-        data.new_lng = new_lng;
+        data.longitude = new_lng;
     }
     $.ajax({
         type: "POST",
-        url: baseUrl + "json/device/manage",
-        data: JSON.stringify(data),
-        contentType: 'application/json; charset=utf-8',
-        dataType: 'json',
+        url: baseUrl + "node",
+        data: data,
         success: function (result) {
             if (typeof (success) === 'function') {
                 success(result);
@@ -175,11 +160,134 @@ window.swarmApi.updateDevice = function (id, key, new_key, new_type, new_name, n
     });
 };
 
-window.swarmApi.getDeviceHistory = function (id, key, since, before, success, err) {
+window.swarmApi.getNodeHistory = function (id, key, since, before, success, err) {
     $.ajax({
         type: "GET",
-        url: baseUrl + "json/device/history",
-        data: {id: id, key: key, since: since, before: before},
+        url: baseUrl + "node/history",
+        data: {id: id, key: key, after: since, before: before},
+        success: function (result) {
+            if (typeof (success) === 'function') {
+                success(result);
+            }
+        },
+        err: function (result) {
+            if (typeof (err) === 'function') {
+                err();
+            }
+        }
+    });
+};
+
+
+
+
+window.swarmApi.getUserRovers = function (success, err) {
+    $.ajax({
+        type: "GET",
+        url: baseUrl + "rover/user",
+        success: function (result) {
+            if (typeof (success) === 'function') {
+                success(result);
+            }
+        },
+        err: function (result) {
+            if (typeof (err) === 'function') {
+                err();
+            }
+        }
+    });
+};
+
+window.swarmApi.getRover = function (id, key, success, err) {
+    $.ajax({
+        type: "GET",
+        url: baseUrl + "rover",
+        data: {id: id, key: key},
+        success: function (result) {
+            if (typeof (success) === 'function') {
+                success(result);
+            }
+        },
+        err: function (result) {
+            if (typeof (err) === 'function') {
+                err();
+            }
+        }
+    });
+};
+
+window.swarmApi.deleteRover = function (id, key, success, err) {
+    $.ajax({
+        type: "POST",
+        url: baseUrl + "rover/delete",
+        data: {id: id, key: key},
+        success: function (result) {
+            if (typeof (success) === 'function') {
+                success(result);
+            }
+        },
+        err: function (result) {
+            if (typeof (err) === 'function') {
+                err();
+            }
+        }
+    });
+};
+
+window.swarmApi.createRover = function (name, lat, lng, success, err) {
+    $.ajax({
+        type: "POST",
+        url: baseUrl + "rover/create",
+        data: {latitude: lat, longitude: lng, name: name},
+        success: function (result) {
+            if (typeof (success) === 'function') {
+                success(result);
+            }
+        },
+        err: function (result) {
+            if (typeof (err) === 'function') {
+                err();
+            }
+        }
+    });
+};
+
+window.swarmApi.updateRover = function (id, key, new_key, new_name, new_lat, new_lng, success, err) {
+    var data = {id: id, key: key};
+    if (new_key != undefined) {
+        data.nKey = new_key;
+    }
+    if (new_name != undefined) {
+        data.name = new_name;
+    }
+    if (new_lat != undefined) {
+        data.latitude = new_lat;
+    }
+    if (new_lng != undefined) {
+        data.longitude = new_lng;
+    }
+    $.ajax({
+        type: "POST",
+        url: baseUrl + "rover",
+        data: data,
+        success: function (result) {
+            if (typeof (success) === 'function') {
+                success(result);
+            }
+        },
+        err: function (result) {
+            if (typeof (err) === 'function') {
+                err();
+            }
+        }
+    });
+};
+
+window.swarmApi.getRoverHistory = function (id, key, since, before, success, err) {
+    $.ajax({
+        type: "GET",
+        url: baseUrl + "rover/history",
+        data: {id: id, key: key, after: since, before: before},
         success: function (result) {
             if (typeof (success) === 'function') {
                 success(result);
