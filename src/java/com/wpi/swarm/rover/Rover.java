@@ -27,7 +27,7 @@ public class Rover {
     public byte[] key = null;
     public int state = -1;
     public long time = 0;
-    public ObjectId currentNextStep = null;
+    public ObjectId currentCmd = null;
 
     public static Document buildDoc(Rover rover) {
         if (rover == null) {
@@ -58,8 +58,8 @@ public class Rover {
         if (Double.isFinite(rover.longitude)) {
             doc.put("lng", rover.longitude);
         }
-        if (rover.currentNextStep != null) {
-            doc.put("next", rover.currentNextStep);
+        if (rover.currentCmd != null) {
+            doc.put("current", rover.currentCmd);
         }
         return doc;
     }
@@ -96,8 +96,8 @@ public class Rover {
             if (doc.containsKey("lng")) {
                 rover.longitude = doc.getDouble("lng");
             }
-            if (doc.containsKey("next")) {
-                rover.currentNextStep = doc.getObjectId("next");
+            if (doc.containsKey("current")) {
+                rover.currentCmd = doc.getObjectId("current");
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -133,8 +133,8 @@ public class Rover {
         if (Double.isFinite(node.longitude)) {
             json.add("longitude", node.longitude);
         }
-        if (node.currentNextStep != null) {
-            json.add("next", node.currentNextStep.toHexString());
+        if (node.currentCmd != null) {
+            json.add("current", node.currentCmd.toHexString());
         }
         return json;
     }

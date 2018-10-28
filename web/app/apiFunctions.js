@@ -300,3 +300,104 @@ window.swarmApi.getRoverHistory = function (id, key, since, before, success, err
         }
     });
 };
+
+
+window.swarmApi.getRoverCmd = function (id, success, err) {
+    $.ajax({
+        type: "GET",
+        url: baseUrl + "rover/cmd",
+        data: {id: id},
+        success: function (result) {
+            if (typeof (success) === 'function') {
+                success(result);
+            }
+        },
+        err: function (result) {
+            if (typeof (err) === 'function') {
+                err();
+            }
+        }
+    });
+};
+
+window.swarmApi.deleteRoverCmd = function (id, success, err) {
+    $.ajax({
+        type: "POST",
+        url: baseUrl + "rover/cmd/delete",
+        data: {id: id},
+        success: function (result) {
+            if (typeof (success) === 'function') {
+                success(result);
+            }
+        },
+        err: function (result) {
+            if (typeof (err) === 'function') {
+                err();
+            }
+        }
+    });
+};
+
+window.swarmApi.createRoverCmd = function (roverId, lat, lng, success, err) {
+    $.ajax({
+        type: "POST",
+        url: baseUrl + "rover/cmd/create",
+        data: {latitude: lat, longitude: lng, roverId: roverId},
+        success: function (result) {
+            if (typeof (success) === 'function') {
+                success(result);
+            }
+        },
+        err: function (result) {
+            if (typeof (err) === 'function') {
+                err();
+            }
+        }
+    });
+};
+
+window.swarmApi.updateRoverCmd = function (id, new_lat, new_lng, new_cmd, success, err) {
+    var data = {id: id};
+    if (new_cmd != undefined) {
+        data.cmd = new_cmd;
+    }
+    if (new_lat != undefined) {
+        data.latitude = new_lat;
+    }
+    if (new_lng != undefined) {
+        data.longitude = new_lng;
+    }
+    $.ajax({
+        type: "POST",
+        url: baseUrl + "rover/cmd",
+        data: data,
+        success: function (result) {
+            if (typeof (success) === 'function') {
+                success(result);
+            }
+        },
+        err: function (result) {
+            if (typeof (err) === 'function') {
+                err();
+            }
+        }
+    });
+};
+
+window.swarmApi.getRoverCmds = function (roverId, success, err) {
+    $.ajax({
+        type: "GET",
+        url: baseUrl + "rover/cmd/list",
+        data: {roverId: roverId},
+        success: function (result) {
+            if (typeof (success) === 'function') {
+                success(result);
+            }
+        },
+        err: function (result) {
+            if (typeof (err) === 'function') {
+                err();
+            }
+        }
+    });
+};

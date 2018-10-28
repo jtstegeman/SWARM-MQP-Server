@@ -14,7 +14,9 @@ import static com.wpi.swarm.node.NodeController.getKey;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
+import static jdk.nashorn.internal.objects.NativeString.search;
 import org.bson.Document;
+import org.bson.types.ObjectId;
 
 /**
  *
@@ -29,6 +31,7 @@ public class RoverController {
         c.getCollection("rovers").createIndex(Indexes.ascending("owner"));
         c.getCollection("rover_log").createIndex(Indexes.ascending("rId"));
         c.getCollection("rover_log").createIndex(Indexes.ascending("time"));
+        c.getCollection("rover_cmds").createIndex(Indexes.ascending("rId"));
     }
 
     public RoverController(MCon con) {
@@ -70,7 +73,7 @@ public class RoverController {
             r.nextBytes(node.key);
             node.latitude = lat;
             node.longitude = lng;
-            node.currentNextStep = null;
+            node.currentCmd = null;
             node.state = 0;
             Document d = Rover.buildDoc(node);
             if (d != null) {
@@ -195,6 +198,90 @@ public class RoverController {
             }
             it.close();
             return rovers;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new ArrayList<>();
+    }
+
+    public boolean addRoverCmdToEnd(long roverId, double lat, double lng) {
+        try {
+            RoverCmd c = new RoverCmd();
+            c.roverId = roverId;
+            c.latitude = lat;
+            c.longitude = lng;
+            c.cmd = 0;
+            c.id = new ObjectId();
+            Document d = RoverCmd.buildDocument(c);
+            if (d == null) {
+                return false;
+            }
+            con.getCollection("rover_cmds").insertOne(d);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public boolean updateRoverCmd(String id, RoverCmd state) {
+        try {
+            Document d = RoverCmd.buildDocument(state);
+            if (d == null) {
+                return false;
+            }
+            return con.getCollection("rover_cmds").updateOne(new Document("_id", new ObjectId(id)), new Document("$set",d)).getMatchedCount()!=0;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+    
+    public boolean deleteRoverCmd(String id) {
+        try {
+            return con.getCollection("rover_cmds").deleteOne(new Document("_id", new ObjectId(id))).getDeletedCount()!=0;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public RoverCmd getRoverCmd(String cmdId) {
+        try {
+            Document search = new Document("_id", new ObjectId(cmdId));
+            return RoverCmd.buildCmd(con.getCollection("rover_cmds").find(search).first());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public RoverCmd getCurrentRoverCmd(long roverId) {
+        try {
+            Document search = new Document("rId", roverId);
+            return RoverCmd.buildCmd(con.getCollection("rover_cmds").find(search).sort(new Document("_id", 1)).first());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public List<RoverCmd> getRoverCmds(long roverId) {
+        try {
+            List<RoverCmd> cmds = new ArrayList<>();
+            Document search = new Document("rId", roverId);
+            MongoCursor<Document> it = con.getCollection("rover_cmds").find(search).sort(new Document("_id", 1)).iterator();
+            try {
+                while (it.hasNext()) {
+                    RoverCmd n = RoverCmd.buildCmd(it.next());
+                    if (n != null) {
+                        cmds.add(n);
+                    }
+                }
+            } catch (Exception ex) {
+            }
+            it.close();
+            return cmds;
         } catch (Exception e) {
             e.printStackTrace();
         }

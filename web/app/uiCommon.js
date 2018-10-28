@@ -56,7 +56,7 @@ window.swarmUi.showNode = function (deviceId, deviceKey) {
                 '</div>');
         $('#devModal').modal('show');
         swarmApi.getNode(deviceId, deviceKey, function (data) {
-            if (!data.data){
+            if (!data.data) {
                 alert('error');
                 return;
             }
@@ -71,7 +71,7 @@ window.swarmUi.showNode = function (deviceId, deviceKey) {
             $('#devModal-content').append('<div><span style="display: inline-block; width: 30%; font-size: 1.1em; font-weight: bold;"> Temperature: </span>' + data.data.temperature + '</div>');
             $('#devModal-content').append('<div><span style="display: inline-block; width: 30%; font-size: 1.1em; font-weight: bold;"> Humidity: </span>' + data.data.humidity + '</div>');
             $('#devModal-content').append('<div><span style="display: inline-block; width: 30%; font-size: 1.1em; font-weight: bold;"> UV Light: </span>' + data.data.uv + '</div>');
-            $('#devModal-content').append('<div><span style="display: inline-block; width: 30%; font-size: 1.1em; font-weight: bold;"> IR Light: </span>' + data.data.ir+ '</div>');
+            $('#devModal-content').append('<div><span style="display: inline-block; width: 30%; font-size: 1.1em; font-weight: bold;"> IR Light: </span>' + data.data.ir + '</div>');
             $('#devModal-content').append('<div><span style="display: inline-block; width: 30%; font-size: 1.1em; font-weight: bold;"> Visible Light: </span>' + data.data.visible + '</div>');
             $('#devModal-content').append('<div><span style="display: inline-block; width: 30%; font-size: 1.1em; font-weight: bold;"> Battery: </span>' + data.data.battery + '</div>');
             $('#devModal-content').append('<br><br><div><span style="display: inline-block; width: 30%; font-size: 1.5em;">History:</span><button style="float:right;" id="devModal-history-refresh"><i class="fa fa-refresh"></i></button></div>');
@@ -109,7 +109,7 @@ window.swarmUi.showNode = function (deviceId, deviceKey) {
                         $('#devModal-history-graph').css('width', '100%');
                         $('#devModal-history-graph').css('height', '500px');
                         var gData = [];
-                        var addData = function(x) {
+                        var addData = function (x) {
                             var t1 = res.data.filter(function (tm) {
                                 return tm[x] != undefined;
                             });
@@ -160,7 +160,7 @@ if ($('#devMap').length) {
                     var marker = L.marker([data.data[i].latitude, data.data[i].longitude]);
                     aveLat = aveLat + data.data[i].latitude;
                     aveLng = aveLng + data.data[i].longitude;
-                    marker.bindPopup('<a href="#' + data.data[i].id + '" onclick="swarmUi.showNode(' + data.data[i].id + ',\'' + data.data[i].key + '\')">Node: ' + data.data[i].id + '</a>');
+                    marker.bindPopup('<a href="#' + data.data[i].id + '" onclick="swarmUi.showNode(' + data.data[i].id + ',\'' + data.data[i].key + '\')">Node: ' + data.data[i].name + '</a>');
                     marker.addTo(map);
                 }
                 if (data.data.length != 0) {
@@ -259,7 +259,7 @@ window.swarmUi.showRover = function (roverId, roverKey) {
                 '</div>');
         $('#roverModal').modal('show');
         swarmApi.getRover(roverId, roverKey, function (data) {
-            if (!data.data){
+            if (!data.data) {
                 alert('error');
                 return;
             }
@@ -289,42 +289,11 @@ window.swarmUi.showRover = function (roverId, roverKey) {
                 }, 2000);
             });
 
-            
+
         });
     }
 }
 
-
-if ($('#roverMap').length) {
-    $(document).ready(function () {
-        var map = L.map('roverMap');
-        L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoianN0ZWciLCJhIjoiY2ptc2M3dmxyMDFmaTNrcndmYXd4djZtayJ9.TJmh8CuOCnJDeAEbmrw07A', {
-            attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
-            maxZoom: 22,
-            id: 'mapbox.streets',
-            accessToken: 'pk.eyJ1IjoianN0ZWciLCJhIjoiY2ptc2M3dmxyMDFmaTNrcndmYXd4djZtayJ9.TJmh8CuOCnJDeAEbmrw07A'
-        }).addTo(map);
-
-        swarmApi.getUserRovers(function (data) {
-            if (data.data) {
-                var aveLat = 0;
-                var aveLng = 0;
-                for (var i = 0; i < data.data.length; i++) {
-                    var marker = L.marker([data.data[i].latitude, data.data[i].longitude]);
-                    aveLat = aveLat + data.data[i].latitude;
-                    aveLng = aveLng + data.data[i].longitude;
-                    marker.bindPopup('<a href="#' + data.data[i].id + '" onclick="swarmUi.showRover(' + data.data[i].id + ',\'' + data.data[i].key + '\')">Rover: ' + data.data[i].id + '</a>');
-                    marker.addTo(map);
-                }
-                if (data.data.length != 0) {
-                    aveLat = aveLat / data.data.length;
-                    aveLng = aveLng / data.data.length;
-                }
-                map.setView([aveLat, aveLng], 13);
-            }
-        });
-    });
-}
 
 if ($('#newRoverModal').length) {
     $(document).ready(function () {
@@ -360,5 +329,141 @@ if ($('#newRoverModal').length) {
                 });
             });
         });
+    });
+}
+
+if ($('#roverMap').length) {
+    $(document).ready(function () {
+        var map = L.map('roverMap');
+        L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoianN0ZWciLCJhIjoiY2ptc2M3dmxyMDFmaTNrcndmYXd4djZtayJ9.TJmh8CuOCnJDeAEbmrw07A', {
+            attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+            maxZoom: 22,
+            id: 'mapbox.streets',
+            accessToken: 'pk.eyJ1IjoianN0ZWciLCJhIjoiY2ptc2M3dmxyMDFmaTNrcndmYXd4djZtayJ9.TJmh8CuOCnJDeAEbmrw07A'
+        }).addTo(map);
+
+        var markers = [];
+
+        var clearMarkers = function () {
+            while (markers.length > 0) {
+                map.removeLayer(markers.pop());
+            }
+        };
+
+        var showCurrentRoverPos = function () {
+            swarmApi.getUserRovers(function (data) {
+                if (data.data) {
+                    clearMarkers();
+                    var roverOpts = {0: 'Select Rover'};
+                    var aveLat = 0;
+                    var aveLng = 0;
+                    for (var i = 0; i < data.data.length; i++) {
+                        roverOpts[data.data[i].id] = data.data[i].name;
+                        var marker = L.marker([data.data[i].latitude, data.data[i].longitude]);
+                        markers.push(marker);
+                        aveLat = aveLat + data.data[i].latitude;
+                        aveLng = aveLng + data.data[i].longitude;
+                        marker.bindPopup('<a href="#' + data.data[i].id + '" onclick="swarmUi.showRover(' + data.data[i].id + ',\'' + data.data[i].key + '\')">Rover: ' + data.data[i].name + '</a>');
+                        marker.addTo(map);
+                    }
+                    if (data.data.length != 0) {
+                        aveLat = aveLat / data.data.length;
+                        aveLng = aveLng / data.data.length;
+                    }
+
+                    var mySelect = $('#roverSelect');
+                    mySelect.empty();
+                    $.each(roverOpts, function (val, text) {
+                        mySelect.append($('<option></option>').val(val).html(text));
+                    });
+                    map.setView([aveLat, aveLng], 13);
+                }
+            });
+        };
+
+
+        window.swarmUi.showCurrentRoverPath = function (roverId) {
+            swarmApi.getRoverCmds(roverId, function (data) {
+                clearMarkers();
+                console.log(data);
+                if (data.data) {
+                    var aveLat = 0;
+                    var aveLng = 0;
+                    var path = [];
+                    for (var i = 0; i < data.data.length; i++) {
+                        var cOpts = {color: 'blue',
+                            fillColor: 'blue',
+                            fillOpacity: 0.5,
+                            radius: 5};
+                        if (data.data[i].cmd==1){
+                            cOpts.color = 'red';
+                            cOpts.fillColor='red';
+                        }
+                        if (data.data[i].cmd==2){
+                            cOpts.color = 'green';
+                            cOpts.fillColor= 'green';
+                        }
+                        var marker = L.circle([data.data[i].latitude, data.data[i].longitude], cOpts);
+                        markers.push(marker);
+                        marker.addTo(map);
+                        marker = L.marker([data.data[i].latitude, data.data[i].longitude]);
+                        markers.push(marker);
+                        aveLat = aveLat + data.data[i].latitude;
+                        aveLng = aveLng + data.data[i].longitude;
+                        if (data.data[i].cmd == 0) {
+                            marker.bindPopup('<h6>[' + i + '] Command: Drive</h6>' +
+                                    '<button onclick="swarmApi.updateRoverCmd(\'' + data.data[i].id + '\',' + data.data[i].latitude + ',' + data.data[i].longitude + ',1, function(){swarmUi.showCurrentRoverPath(' + roverId + ')})" >Drop off</button>' +
+                                    '<button onclick="swarmApi.updateRoverCmd(\'' + data.data[i].id + '\',' + data.data[i].latitude + ',' + data.data[i].longitude + ',2, function(){swarmUi.showCurrentRoverPath(' + roverId + ')})" >Pick up</button>' +
+                                    '<button onclick="swarmApi.deleteRoverCmd(\'' + data.data[i].id + '\', function(){swarmUi.showCurrentRoverPath(' + roverId + ')})" >Delete</button>');
+                        } else if (data.data[i].cmd == 1) {
+                            marker.bindPopup('<h6>[' + i + '] Command: Drop Off</h6>' +
+                                    '<button onclick="swarmApi.updateRoverCmd(\'' + data.data[i].id + '\',' + data.data[i].latitude + ',' + data.data[i].longitude + ',0, function(){swarmUi.showCurrentRoverPath(' + roverId + ')})" >Drive</button>' +
+                                    '<button onclick="swarmApi.updateRoverCmd(\'' + data.data[i].id + '\',' + data.data[i].latitude + ',' + data.data[i].longitude + ',2, function(){swarmUi.showCurrentRoverPath(' + roverId + ')})" >Pick up</button>' +
+                                    '<button onclick="swarmApi.deleteRoverCmd(\'' + data.data[i].id + '\', function(){swarmUi.showCurrentRoverPath(' + roverId + ')})" >Delete</button>');
+                        } else if (data.data[i].cmd == 2) {
+                            marker.bindPopup('<h6>[' + i + '] Command: Pick up</h6>' +
+                                    '<button onclick="swarmApi.updateRoverCmd(\'' + data.data[i].id + '\',' + data.data[i].latitude + ',' + data.data[i].longitude + ',0, function(){swarmUi.showCurrentRoverPath(' + roverId + ')})" >Drive</button>' +
+                                    '<button onclick="swarmApi.updateRoverCmd(\'' + data.data[i].id + '\',' + data.data[i].latitude + ',' + data.data[i].longitude + ',1, function(){swarmUi.showCurrentRoverPath(' + roverId + ')})" >Drop off</button>' +
+                                    '<button onclick="swarmApi.deleteRoverCmd(\'' + data.data[i].id + '\', function(){swarmUi.showCurrentRoverPath(' + roverId + ')})" >Delete</button>');
+                        } else {
+                            marker.bindPopup('[' + i + '] Command: ' + data.data[i].cmd + '<br><button onclick="swarmApi.deleteRoverCmd(\'' + data.data[i].id + '\', function(){swarmUi.showCurrentRoverPath(' + roverId + ')})" >Delete</button>');
+                        }
+                        marker.addTo(map);
+                        path.push([data.data[i].latitude, data.data[i].longitude]);
+                    }
+                    var polyline = L.polyline(path, {color: 'yellow'}).addTo(map);
+                    markers.push(polyline);
+                }
+            });
+        };
+
+        if ($('#roverSelect').length) {
+            $('#roverSelect').on('change', function () {
+                var sel = $('#roverSelect').val();
+                if (sel == 0 || sel == '') {
+                    console.log('reload');
+                    showCurrentRoverPos();
+                } else {
+                    console.log(sel);
+                    swarmUi.showCurrentRoverPath(sel);
+                }
+            });
+        }
+
+        map.on('click', onMapClick);
+
+        function onMapClick(e) {
+            if ($('#roverSelect').length) {
+                var sel = $('#roverSelect').val();
+                if (sel != 0 && sel != '') {
+                    console.log(e.latlng);
+                    swarmApi.createRoverCmd(sel, e.latlng.lat, e.latlng.lng, function () {
+                        swarmUi.showCurrentRoverPath(sel);
+                    });
+                }
+            }
+        }
+
+        showCurrentRoverPos();
     });
 }
