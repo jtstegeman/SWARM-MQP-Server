@@ -77,4 +77,10 @@ public class RoverCmd {
         json.add("rover", cmd.roverId);
         return json;
     }
+
+    @Override
+    public String toString() {
+        return "RoverCmd{" + "id=" + id.toHexString() + ", roverId=" + roverId + ", latitude=" + latitude + ", longitude=" + longitude + ", cmd=" + cmd + '}';
+    }
+    
 }

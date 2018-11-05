@@ -139,4 +139,9 @@ public class Rover {
         return json;
     }
 
+    @Override
+    public String toString() {
+        return "Rover{" + "id=" + id + ", name=" + name + ", owner=" + owner + ", latitude=" + latitude + ", longitude=" + longitude + ", key=" + key + ", state=" + state + ", time=" + time + ", currentCmd=" + currentCmd + '}';
+    }
+
 }

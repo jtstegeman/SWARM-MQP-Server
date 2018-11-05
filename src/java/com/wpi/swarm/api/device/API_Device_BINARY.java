@@ -5,8 +5,6 @@
  */
 package com.wpi.swarm.api.device;
 
-import com.google.gson.Gson;
-import com.wpi.swarm.auth.Authorizer;
 import com.wpi.swarm.device.DeviceController;
 import com.wpi.swarm.device.DeviceInfo;
 import com.wpi.swarm.device.DeviceType;
@@ -14,9 +12,8 @@ import com.wpi.swarm.device.DeviceType.ValueDef;
 import com.wpi.swarm.device.DeviceType.ValueDef.ValueType;
 import com.wpi.swarm.mongo.MCon;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.Map;
-import javax.json.Json;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
 import javax.servlet.annotation.WebServlet;
@@ -43,7 +40,6 @@ public class API_Device_BINARY extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        System.out.println("Bin");
         response.setContentType("application/octet-stream");
         MCon m = new MCon();
         try (ServletInputStream in = request.getInputStream()) {
@@ -213,12 +209,18 @@ public class API_Device_BINARY extends HttpServlet {
             }
             if (state != 18 || inf == null) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                try (OutputStream out = response.getOutputStream()) {
+                    out.write("Bad\n".getBytes(StandardCharsets.US_ASCII));
+                }
                 return;
             }
             if (inf.changed()) {
                 c.updateDevice(id, key, inf);
             }
             response.setStatus(HttpServletResponse.SC_OK);
+            try (OutputStream out = response.getOutputStream()) {
+                out.write("Bye\n".getBytes(StandardCharsets.US_ASCII));
+            }
         }
     }
 

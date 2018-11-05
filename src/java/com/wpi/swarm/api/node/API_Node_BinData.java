@@ -35,7 +35,6 @@ public class API_Node_BinData extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        System.out.println("Node Bin");
         response.setContentType("application/octet-stream");
         MCon m = new MCon();
         try (ServletInputStream in = request.getInputStream()) {

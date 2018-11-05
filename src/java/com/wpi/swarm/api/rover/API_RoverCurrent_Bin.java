@@ -47,7 +47,11 @@ public class API_RoverCurrent_Bin extends HttpServlet {
             int index = 0;
             int act=0;
             long id=0;
+            float lat=0;
+            float lng=0;
+            int temp=0;
             byte[] key=new byte[8];
+            byte[] ida=new byte[8];
             while (v != -1) {
                 switch (index) {
                     case 0:
@@ -62,34 +66,42 @@ public class API_RoverCurrent_Bin extends HttpServlet {
                         break;
                     case 2:
                         id = v & 0xFF;
+                        ida[0] = (byte)v;
                         break;
                     case 3:
                         id <<= 8;
                         id |= v & 0xFF;
+                        ida[1] = (byte)v;
                         break;
                     case 4:
                         id <<= 8;
                         id |= v & 0xFF;
+                        ida[2] = (byte)v;
                         break;
                     case 5:
                         id <<= 8;
                         id |= v & 0xFF;
+                        ida[3] = (byte)v;
                         break;
                     case 6:
                         id <<= 8;
                         id |= v & 0xFF;
+                        ida[4] = (byte)v;
                         break;
                     case 7:
                         id <<= 8;
                         id |= v & 0xFF;
+                        ida[5] = (byte)v;
                         break;
                     case 8:
                         id <<= 8;
                         id |= v & 0xFF;
+                        ida[6] = (byte)v;
                         break;
                     case 9:
                         id <<= 8;
                         id |= v & 0xFF;
+                        ida[7] = (byte)v;
                         break;
 
                     case 10:
@@ -119,44 +131,82 @@ public class API_RoverCurrent_Bin extends HttpServlet {
                     case 18:
                         act = v;
                         break;
+                        
+                    case 19:
+                        temp = v&0xFF;
+                        break;
+                    case 20:
+                        temp<<=8;
+                        temp |= v&0xFF;
+                        break;
+                    case 21:
+                        temp<<=8;
+                        temp |= v&0xFF;
+                        break;
+                    case 22:
+                        temp<<=8;
+                        temp |= v&0xFF;
+                        lat = Float.intBitsToFloat(temp);
+                        break;
+                    
+                    case 23:
+                        temp = v&0xFF;
+                        break;
+                    case 24:
+                        temp<<=8;
+                        temp |= v&0xFF;
+                        break;
+                    case 25:
+                        temp<<=8;
+                        temp |= v&0xFF;
+                        break;
+                    case 26:
+                        temp<<=8;
+                        temp |= v&0xFF;
+                        lng = Float.intBitsToFloat(temp);
+                        break;
                 }
                 index++;
                 v = in.read();
                 if (index>99)
                     break;
             }
+            if (index == 27 || index==28){
+                RoverController rc = new RoverController();
+                Rover r = new Rover();
+                r.latitude = lat;
+                r.longitude = lng;
+                System.out.println(r);
+                rc.updateRover(id, key, r);
+                index = 19;
+            }
             if (index == 19 || index==20){
                 RoverController rc = new RoverController();
                 RoverCmd cmd = rc.getCurrentRoverCmd(id);
                 if (cmd!=null && act==2){ // advance to next
                     rc.deleteRoverCmd(cmd.id.toHexString());
+                    cmd = rc.getCurrentRoverCmd(id);
                 }
-                cmd = rc.getCurrentRoverCmd(id);
                 if (cmd!=null){
+                   System.out.println(cmd);
                    try (OutputStream out = response.getOutputStream()){
-                       out.write(cmd.id.toByteArray());
+                       out.write(0xBC);
+                       out.write(0xBC);
+                       out.write(ida);
+                       temp = Float.floatToRawIntBits((float)cmd.latitude);
+                       byte[] ta = new byte[4];
+                       ta[0] = (byte)(temp&0xFF);
+                       ta[1] = (byte)((temp>>8)&0xFF);
+                       ta[2] = (byte)((temp>>16)&0xFF);
+                       ta[3] = (byte)((temp>>24)&0xFF);
+                       out.write(ta);
+                       temp = Float.floatToRawIntBits((float)cmd.longitude);
+                       ta[0] = (byte)(temp&0xFF);
+                       ta[1] = (byte)((temp>>8)&0xFF);
+                       ta[2] = (byte)((temp>>16)&0xFF);
+                       ta[3] = (byte)((temp>>24)&0xFF);
+                       out.write(ta);
                        out.write(cmd.cmd);
-                       long temp = Double.doubleToRawLongBits(cmd.latitude);
-                       byte[] ta = new byte[8];
-                       ta[0] = (byte)(temp&0xFF);
-                       ta[1] = (byte)((temp>>8)&0xFF);
-                       ta[2] = (byte)((temp>>16)&0xFF);
-                       ta[3] = (byte)((temp>>24)&0xFF);
-                       ta[4] = (byte)((temp>>32)&0xFF);
-                       ta[5] = (byte)((temp>>40)&0xFF);
-                       ta[6] = (byte)((temp>>48)&0xFF);
-                       ta[7] = (byte)((temp>>56)&0xFF);
-                       out.write(ta);
-                       temp = Double.doubleToRawLongBits(cmd.longitude);
-                       ta[0] = (byte)(temp&0xFF);
-                       ta[1] = (byte)((temp>>8)&0xFF);
-                       ta[2] = (byte)((temp>>16)&0xFF);
-                       ta[3] = (byte)((temp>>24)&0xFF);
-                       ta[4] = (byte)((temp>>32)&0xFF);
-                       ta[5] = (byte)((temp>>40)&0xFF);
-                       ta[6] = (byte)((temp>>48)&0xFF);
-                       ta[7] = (byte)((temp>>56)&0xFF);
-                       out.write(ta);
                    }
                 }
             }
