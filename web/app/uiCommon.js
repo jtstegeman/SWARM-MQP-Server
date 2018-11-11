@@ -376,7 +376,7 @@ if ($('#roverMap').length) {
                     $.each(roverOpts, function (val, text) {
                         mySelect.append($('<option></option>').val(val).html(text));
                     });
-                    map.setView([aveLat, aveLng], 13);
+                    map.setView([aveLat, aveLng], 18);
                 }
             });
         };

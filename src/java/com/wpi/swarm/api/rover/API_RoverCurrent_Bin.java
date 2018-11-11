@@ -41,6 +41,7 @@ public class API_RoverCurrent_Bin extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        System.out.println("rover");
         response.setContentType("application/octet-stream");
         try(InputStream in = request.getInputStream()){
             int v = in.read();
@@ -207,6 +208,27 @@ public class API_RoverCurrent_Bin extends HttpServlet {
                        ta[3] = (byte)((temp>>24)&0xFF);
                        out.write(ta);
                        out.write(cmd.cmd);
+                   }
+                }
+                else{
+                    try (OutputStream out = response.getOutputStream()){
+                       out.write(0xBC);
+                       out.write(0xBC);
+                       out.write(ida);
+                       temp = 0;
+                       byte[] ta = new byte[4];
+                       ta[0] = (byte)(temp&0xFF);
+                       ta[1] = (byte)((temp>>8)&0xFF);
+                       ta[2] = (byte)((temp>>16)&0xFF);
+                       ta[3] = (byte)((temp>>24)&0xFF);
+                       out.write(ta);
+                       temp = 0;
+                       ta[0] = (byte)(temp&0xFF);
+                       ta[1] = (byte)((temp>>8)&0xFF);
+                       ta[2] = (byte)((temp>>16)&0xFF);
+                       ta[3] = (byte)((temp>>24)&0xFF);
+                       out.write(ta);
+                       out.write(0);
                    }
                 }
             }
